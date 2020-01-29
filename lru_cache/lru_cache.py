@@ -23,17 +23,9 @@ class LRUCache:
     """
     def get(self, key):
         if key in self.storage:
-            current_node = self.cache.head
-
-            while True:
-                if current_node.value == key:
-                    self.cache.move_to_end(current_node)
-                    break
-                if current_node.next is not None:
-                    current_node = current_node.next
-                else:
-                    break
-            return self.storage[key]
+            node = self.storage[key]
+            self.cache.move_to_end(node)
+            return node.value[1]
         else:
             return None
 
@@ -49,14 +41,19 @@ class LRUCache:
     """
     def set(self, key, value):
         if self.current_nodes >= self.max_nodes and key not in self.storage:
-            head = self.cache.remove_from_head()
-            self.storage.pop(head)
+            self.storage.pop(self.cache.head.value[0])
+            self.cache.remove_from_head()
             self.current_nodes -= 1
 
-        if key not in self.storage:
-            self.current_nodes += 1
-        self.storage[key] = value
-        self.cache.add_to_tail(key)
+        if key in self.storage:
+            node = self.storage[key]
+            node.value = (key, value)
+            self.cache.move_to_end(node)
+            return
+    
+        self.cache.add_to_tail((key, value))
+        self.storage[key] = self.cache.tail
+        self.current_nodes += 1
 
 
 
